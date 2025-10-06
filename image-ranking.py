@@ -106,7 +106,7 @@ if __name__ == '__main__':
         if args.feature_matching:
             args.diff = 0.4
         else:
-            args.diff = 0.90
+            args.diff = 0.9
     if args.resize is None:
         if args.feature_matching:
             args.resize = ('quarter', 'quarter')

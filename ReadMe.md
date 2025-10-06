@@ -19,6 +19,14 @@ I primarily shoot Fujifilm JPG, but I have added rawpy to hopefully maybe suppor
 - Darktable Seeding: Sets default star ratings in darktable .xmp files
 - Parallel Processing: Hashes, Blur, and Set Ratings are done in parralel, Grouping has to be serial though
 
+## ToDo
+
+- Add option for second pass with Feature Detection to focus on images not in groups
+- Add metadata checks ( for lens changes or to catch image overlap in sequences between my two cameras )
+  - Metadata checks are just fairly simple shortcuts to avoid processing (model, lens, date).
+- Add Group Tagging
+- Add Object Detection ( dog, person, flower, rock?, landscape, etc ) to improve group tagging
+
 
 ## Steps
 
@@ -26,13 +34,13 @@ I primarily shoot Fujifilm JPG, but I have added rawpy to hopefully maybe suppor
    Images are collected, grayscaled, optionally resized/cropped/guassian blurred, and then hashed/pre-processed in parallel.
 
 2. Grouping by Similarity, Series, and MetaData:  
-   Images are grouped via the selected method and if they are sequential. Metadata checks are just fairly simple shortcuts to avoid processing (model, lens, date).
+   Images are grouped via the selected method and if they are sequential. 
 
 3. Blur Calculation:  
    Images are resized, cropped, and then blur is calculated via laplacian ( I'm looking into this for more advanced blur handling https://github.com/Utkarsh-Deshmukh/Blurry-Image-Detector )
 
 4. Ranking + Rating:  
-   Images are sorted by sharpness, then rankings are applied based on the selected method from max_rank to zero.
+   Images are sorted by sharpness, then rankings are applied based on the selected method from max_rank to zero. 
 
 
 ## Usage
@@ -86,4 +94,4 @@ python image-ranking.py ./photoshoot -e -m 4 -v
 - Always review the results before bulk deleting or archiving images
 - The tool is designed to be a starting point for culling, not a magic bullet
 - This tool is provided with no guarantees (:
-- reminder for future me, do "pipreqs . > requirements.txt" when you add imports
+- reminder for future me, do "pipreqs . > requirements.txt" when you add new imports
