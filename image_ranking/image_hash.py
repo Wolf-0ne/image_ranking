@@ -1,0 +1,108 @@
+
+import hashlib
+import cv2
+import logging
+import numpy
+
+from image_ranking.cv2_image_hash import cv2_process_image, cv2_compare_image, cv2_crop, cv2_resize
+from image_ranking.image_similarity import image_similarity
+
+
+class ImageHash:
+
+    """
+    Image to group class
+    """
+    def __init__(self, filename: str, path: str, content_type: str, args):
+
+        # save args
+        self.args = args
+
+        # image original path
+        self.path = path
+
+        # image filename
+        self.filename = filename
+
+        # image mime type
+        self.content_type = content_type
+
+        # cv2 processed image
+        self.processed_image = cv2_process_image(path, content_type, args)
+
+        # save image shape
+        self.shape = args.resize
+        if self.processed_image.shape is not None:
+            self.shape = self.processed_image.shape
+
+        # hash image content
+        self.hash = hashlib.md5(str(self.processed_image).encode()).hexdigest()
+
+        # image blur value
+        self.blur = None
+
+        # image rank
+        self.rank = 0
+        
+        # parent image ref
+        self.root = None
+
+        logging.debug(f"  {self.filename} ###")
+
+
+    def is_same_group(self, anotherImage) -> bool:
+
+        score = 0
+        result = False
+
+        # feature matching
+        if self.args.feature_matching:
+            score = image_similarity(self.processed_image, anotherImage.processed_image)
+            result = score >= self.args.diff
+
+        # cv2 hash compare
+        else:
+            score, res_cnts, thresh = cv2_compare_image(self.processed_image, anotherImage.processed_image, self.args)
+            result = score < self.shape[0] * self.shape[1] * self.args.diff #delta is rougly number of total pixels
+        
+        # debug print
+        logging.debug(f"  {self.filename} <--> {anotherImage.filename} == {score}")
+        
+        # return compare result
+        return result
+    
+
+    def calculate_blur(self):
+        try:
+
+            # read image
+            image = cv2.imread(str(self.path))
+            if image is None:
+                logging.warning(f'warning! failed to read image from {self.path}; skipping!')
+                return
+            
+            # resize and crop
+            image = cv2_resize(image, ("half", "half")) # resize to speed up processing
+            image = cv2_crop(image, 15) # crop 15% border for better blur detection
+
+            # estimate blur
+            blur_map = cv2.Laplacian(image, cv2.CV_64F)
+            score = numpy.var(blur_map)
+
+            # set attributes
+            self.blur = score
+            self.blur_map = blur_map
+
+            # debug print
+            logging.debug(f"  {self.filename} ~ {self.blur}")
+
+        except Exception as e:
+            logging.error(f"error calculating blur for {self.path}: {e}")
+
+
+    @property
+    def root_hash(self) -> str:
+        # get image root hash, if self is root, get self hash
+        if not self.root: return self.hash
+        return self.root.hash
+    
