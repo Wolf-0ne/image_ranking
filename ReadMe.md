@@ -85,8 +85,8 @@ python image-ranking.py ./photoshoot -e -m 4 -v
 ## Citations
 
 - I used CoPilot quite a bit on this as I've only used python a handful of times 
-- mimetype filtering and grouping derived from (ezirmusitua's)[https://gist.github.com/ezirmusitua/1aa47567ad4ebd5679f9e3df09585e17] group-same-image.py
-- learned how to use Laplacian and argparse from (WillBrennan's)[https://github.com/WillBrennan/BlurDetection2/tree/master]
+- mimetype filtering and grouping derived from [ezirmusitua's group-same-image.py](https://gist.github.com/ezirmusitua/1aa47567ad4ebd5679f9e3df09585e17) 
+- learned how to use Laplacian and argparse from [WillBrennan's BlurDetection2](https://github.com/WillBrennan/BlurDetection2/tree/master) 
 
 
 ## Notes
