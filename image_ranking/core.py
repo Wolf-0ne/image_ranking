@@ -1,7 +1,8 @@
 
 import argparse
-import concurrent.futures
 import logging
+import math
+import concurrent.futures
 
 from image_ranking.image_hash import ImageHash
 
@@ -105,14 +106,22 @@ class Core(object):
         rank = self.args.max_rank
 
         # iterate images
+        i = 0
+        next = 1
         image: ImageHash
         for image in images:
 
             # set rank
             image.rank = rank
+            # increment files
+            i += 1
             
-            # decrement rank
-            if rank > 0: rank -= 1
+            # decrement rank, distribute results
+            if i == next:
+                next = next * 2 + i
+                if next * 2 > len(images): 
+                    next -= 1
+                if rank > 0: rank -= 1
 
             # debug print
             logging.debug(f"file: {image.filename} blur: {image.blur} rank: {image.rank}")
