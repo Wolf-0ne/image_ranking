@@ -62,12 +62,13 @@ def main(args: argparse.Namespace):
 
 # main entry point
 if __name__ == '__main__':
+
+    # init
     start_time = time.time()
+    default_threads = os.cpu_count() if os.cpu_count() else 4
 
     # parse command line arguments
     parser = argparse.ArgumentParser(description='run blur detection on a single image')
-
-    default_threads = os.cpu_count() if os.cpu_count() else 4
 
     parser.add_argument('directory', type=str, help='directory of images')
 
@@ -79,12 +80,15 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--max_rank', metavar='int', type=int, default=3, help='max image rank (1 to 5)')
     parser.add_argument('-t', '--threads', metavar='int', type=int, default=default_threads, help='number of threads')
 
-    parser.add_argument('-r', '--resize', metavar='touple (x,y)', type=tuple, default=None, help='resize image dimension')
+    parser.add_argument('-r', '--resize', metavar='(int_x, int_y)', type=tuple, default=None, help='similarity detection image size, supports keywords "half/third/quarter"')
+    parser.add_argument('--blur_resize', metavar='(int_x, int_y)', type=tuple, default=None, help='blur detection image size, supports keywords "half/third/quarter"')
 
-    parser.add_argument('--cv2_min_contour_area', metavar='int', type=int, default=500, help='cv2 minimum contour area for similarity comparison')
-    parser.add_argument('--cv2_crop', metavar='int', default=5, help='cv2 crop mask (in %) to apply on the image')
-    parser.add_argument('--cv2_gaussian_blur_radius', type=str, nargs='+', default=[None], help='cv2 list of radii for Gaussian blur')
-    parser.add_argument('--cv2_delta_threshold', metavar='int', type=int, default=25, help='cv2 delta threshold for similarity comparison')
+    parser.add_argument('-s', '--similarity_crop', metavar='int', default=10, help='similarity detection crop mask (in %)')
+    parser.add_argument('-b', '--blur_crop', metavar='int', default=25, help='blur detection crop mask (in %)')
+    
+    parser.add_argument('--gaussian_blur_radius', metavar='[5],[10]', type=str, nargs='+', default=[None], help='List of radii for Gaussian blur applied before similarity detection')
+    parser.add_argument('--min_contour_area', metavar='int', type=int, default=500, help='feature matching minimum contour area')
+    parser.add_argument('--delta', metavar='int', type=int, default=25, help='feature matching delta threshold')
     
     parser.add_argument('-v', '--verbose', action='store_true', help='set logging level to debug')
     #parser.add_argument('-d', '--display', action='store_true', help='display images')
@@ -98,6 +102,7 @@ if __name__ == '__main__':
     # parse args
     args = parser.parse_args();
 
+    # debug
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
 
@@ -112,6 +117,8 @@ if __name__ == '__main__':
             args.resize = ('quarter', 'quarter')
         else:
             args.resize = (196, 144)
+    if args.blur_resize is None:
+       args.blur_resize = ('half', 'half')
 
     # run main process
     try:

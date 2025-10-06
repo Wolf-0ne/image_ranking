@@ -13,7 +13,7 @@ I primarily shoot Fujifilm JPG, but I have added rawpy to hopefully maybe suppor
 
 ## Features
 
-- Similarity Detection: via feature detection or hashing. Similarity is calculated in sequence to avoid hash collision
+- Similarity Detection: via feature detection or hashing. Calculated in sequence to avoid hash collision
 - Blur Rank: Each image is analyzed for sharpness using Laplacian on the center of the image
 - Ranking: Within each group, images are ranked by sharpness
 - Darktable Seeding: Sets default star ratings in darktable .xmp files
@@ -60,7 +60,6 @@ python image-ranking.py <directory> [options]
 
 ### Basic Options
 
-
 - `-f, --feature_matching`  
   Use feature matching mode for grouping.
 
@@ -68,10 +67,34 @@ python image-ranking.py <directory> [options]
   Exclude images that already have an XMP file.
 
 - `-d, --diff <float>`  
-  Image difference threshold for grouping (auto-set if not specified).
+  Image difference threshold for grouping (default: 0.9 or 0.4 for feature matching).
 
 - `-m, --max_rank <int>`  
   Maximum star rating to assign (default: 3).
+
+- `-t, --threads <int>`  
+  Number of threads to use (default: number of CPU cores).
+
+- `-r, --resize <(int_x, int_y)>`  
+  Similarity detection image size. Supports keywords `"half"`, `"third"`, `"quarter"` (default: (196, 144) or ('quarter', 'quarter') for feature matching).
+
+- `--blur_resize <(int_x, int_y)>`  
+  Blur detection image size. Supports keywords `"half"`, `"third"`, `"quarter"` (default: ('half', 'half')).
+    
+- `-s, --similarity_crop <int>`  
+  Similarity detection crop mask (in %, default: 10).
+
+- `-b, --blur_crop <int>`  
+  Blur detection crop mask (in %, default: 25).
+
+- `--min_contour_area <int>`  
+  Feature Matching minimum contour area (default: 500).
+
+- `--gaussian_blur_radius <[5],[10]>`  
+  List of radii for Gaussian blur applied before similarity detection (default: [None])
+
+- `--delta <int>`  
+  Feature Matching delta threshold (default: 25).
 
 - `-v, --verbose`  
   Enable debug logging.

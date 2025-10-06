@@ -13,13 +13,13 @@ def cv2_process_image(path: str, content_type: tuple, args: argparse.Namespace):
         image = cv2_resize(image, args.resize)
 
     # apply blur
-    for radius in args.cv2_gaussian_blur_radius:
+    for radius in args.gaussian_blur_radius:
         if radius is not None:
             image = cv2.GaussianBlur(image, (radius, radius), 0)
     
     # apply crop
-    if args.cv2_crop > 0:
-        image = cv2_crop(image, args.cv2_crop)
+    if args.similarity_crop > 0:
+        image = cv2_crop(image, args.similarity_crop)
     
     # return image data
     return image
@@ -101,11 +101,13 @@ def cv2_resize(image, resize: tuple):
 def cv2_crop(image, percent):
     h = image.shape[0]
     w = image.shape[1]
+    t = percent / 2 # half of crop from each size
 
-    h_min = int(h * percent / 100)
-    h_max = w - int(h * percent / 100)
-    w_min = int(w * percent / 100)
-    w_max = w - int(w * percent / 100)
+    h_min = int(h * t / 100)
+    w_min = int(w * t / 100)
+
+    h_max = h - h_min
+    w_max = w - w_min
 
     return image[h_min:h_max, w_min:w_max]
 
@@ -133,7 +135,7 @@ def cv2_compare_image(a, b, args: argparse.Namespace):
     frame_delta = cv2.absdiff(a, b)
 
     # threshold the delta image 
-    thresh = cv2.threshold(frame_delta, args.cv2_delta_threshold, 255, cv2.THRESH_BINARY)[1]
+    thresh = cv2.threshold(frame_delta, args.delta_threshold, 255, cv2.THRESH_BINARY)[1]
 
     # dilate the thresholded image to fill in holes
     thresh = cv2.dilate(thresh, None, iterations=2)
@@ -146,7 +148,7 @@ def cv2_compare_image(a, b, args: argparse.Namespace):
     score = 0
     res_cnts = []
     for c in cnts:
-        if cv2.contourArea(c) < args.cv2_min_contour_area:
+        if cv2.contourArea(c) < args.min_contour_area:
             continue
 
         res_cnts.append(c)

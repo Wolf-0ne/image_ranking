@@ -82,8 +82,8 @@ class ImageHash:
                 return
             
             # resize and crop
-            image = cv2_resize(image, ("half", "half")) # resize to speed up processing
-            image = cv2_crop(image, 15) # crop 15% border for better blur detection
+            image = cv2_resize(image, self.args.blur_resize) # resize to speed up processing
+            image = cv2_crop(image, self.args.blur_crop) # crop border for better central blur detection
 
             # estimate blur
             blur_map = cv2.Laplacian(image, cv2.CV_64F)
