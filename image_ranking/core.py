@@ -131,7 +131,7 @@ class Core(object):
                 
         #apply ratings in parallel
         def rate_image(image: ImageHash):
-            darktable_set_rating(f"{image.path}.xmp", image.rank, True)
+            darktable_set_rating(f"{image.path}.xmp", image.filename, image.rank, True)
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.args.threads) as executor:
             executor.map(rate_image, images)

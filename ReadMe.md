@@ -5,6 +5,8 @@
 
 This script (`image-ranking.py`) is designed to review and group similar images, rank them by sharpness (blurriness), then seed xmp files with ratings for use in [darktable](https://www.darktable.org/).
 
+These xmp files will be detected on import or detected on startup if you have "look for updated xmp files on startup" enabled.
+
 My primary goal was to develop a tool to pre-seed ratings to help with culling bursts/series of photos. I'd also like to potentially group the images as well based on the subject, but with the current variance in this tool I'm avoiding moving any files around for now.
 
 I primarily shoot Fujifilm JPG, but I have added rawpy to hopefully maybe support some Raw formats.
