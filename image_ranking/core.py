@@ -1,7 +1,7 @@
 
 import argparse
 import logging
-import math
+from tqdm import tqdm
 import concurrent.futures
 
 from image_ranking.image_hash import ImageHash
@@ -31,8 +31,9 @@ class Core(object):
 
 
     def group(self):
+        logging.info("group")
         # group all image
-        for i in range(0, len(self.images_list)):
+        for i in tqdm(range(0, len(self.images_list)), ascii=' ='):
             for j in range(i + 1, len(self.images_list)):
 
                 i1 = self.images_list[i]
@@ -49,16 +50,18 @@ class Core(object):
     
 
     def calculate_blur(self):
+        logging.info("calculate_blur")
         
         # calculate blur in parallel
         def blur(image: ImageHash):
-            image.calculate_blur()
+            return image.calculate_blur()
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.args.threads) as executor:
-            executor.map(blur, self.images_list)
+            result = list(tqdm(executor.map(blur, self.images_list), total=len(self.images_list), ascii=' ='))
 
 
     def apply_ratings(self):
+        logging.info("apply_ratings")
 
         # initialize
         image_group = list()
@@ -67,7 +70,7 @@ class Core(object):
 
         # iterate all images
         image: ImageHash
-        for image in self.images_list:
+        for image in tqdm(self.images_list, ascii=' ='):
 
             # set current group
             group_hash = image.root_hash

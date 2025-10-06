@@ -30,6 +30,8 @@ def main(args: argparse.Namespace):
     args.directory = directory
     logging.info(f"directory: {directory}")
 
+    # fix me - show current options here
+
     # initialize Ranking class
     core = Core(args)
 
@@ -37,25 +39,25 @@ def main(args: argparse.Namespace):
     start_time = time.time()
     core.get_and_hash_images()
     end_time = time.time()
-    logging.info(f"get_and_hash_images executed in {end_time - start_time:.2f} seconds")
+    logging.debug(f"get_and_hash_images executed in {end_time - start_time:.2f} seconds")
 
     # group images
     start_time = time.time()
     core.group()
     end_time = time.time()
-    logging.info(f"group executed in {end_time - start_time:.2f} seconds")
+    logging.debug(f"group executed in {end_time - start_time:.2f} seconds")
 
     # calculate blur for each image
     start_time = time.time()
     core.calculate_blur()
     end_time = time.time()
-    logging.info(f"calculate_blur executed in {end_time - start_time:.2f} seconds")
+    logging.debug(f"calculate_blur executed in {end_time - start_time:.2f} seconds")
 
     # process groups
     start_time = time.time()
     core.apply_ratings()
     end_time = time.time()
-    logging.info(f"apply_ratings executed in {end_time - start_time:.2f} seconds")
+    logging.debug(f"apply_ratings executed in {end_time - start_time:.2f} seconds")
 
 
 # main entry point

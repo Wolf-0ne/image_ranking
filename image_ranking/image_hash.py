@@ -47,7 +47,7 @@ class ImageHash:
         # parent image ref
         self.root = None
 
-        logging.debug(f"  {self.filename} ###")
+        #logging.debug(f"  {self.filename} ###")
 
 
     def is_same_group(self, anotherImage) -> bool:
@@ -96,8 +96,12 @@ class ImageHash:
             # debug print
             logging.debug(f"  {self.filename} ~ {self.blur}")
 
+            return True
+
         except Exception as e:
             logging.error(f"error calculating blur for {self.path}: {e}")
+
+        return False
 
 
     @property

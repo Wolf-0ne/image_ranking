@@ -3,6 +3,7 @@ import mimetypes
 import os
 import argparse
 import logging
+from tqdm import tqdm
 
 from concurrent.futures import ThreadPoolExecutor
 
@@ -16,18 +17,17 @@ def get_and_hash_images(args: argparse.Namespace):
     :return: images
     :rtype: a list of tuple(filename, file_path)
     """
+    logging.info("get_and_hash_images")
 
     images = []
     files = os.listdir(args.directory)
     arguments = [(file, args) for file in files]
 
     # Use ThreadPoolExecutor to process files in parallel
-    logging.info(f"files: {len(files)}")
-    logging.info(f"threads: {args.threads}")
     with ThreadPoolExecutor(max_workers=args.threads) as executor:
-        results = executor.map(process_file, arguments)
+        results = list(tqdm(executor.map(process_file, arguments), total=len(files), ascii=' ='))
+        #add valid hashed images to list
         for result in results:
-            #add hashed image to list
             if result:
                 images.append(result)
 
