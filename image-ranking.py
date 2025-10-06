@@ -4,16 +4,27 @@ import argparse
 import logging
 import os
 
+from logging.handlers import MemoryHandler
+
 from pathlib import Path
 
 from image_ranking.core import Core   
 
+# create formatter
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(message)s', datefmt='%H:%M:%S'))
+
+# create memory buffer
+buffer_handler = MemoryHandler(
+    capacity=10000,
+    flushLevel=logging.INFO,
+    target=console_handler
+)
 
 # setup logging
 logging.basicConfig(
-    level=logging.INFO,  # Default level
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    datefmt='%H:%M:%S'
+    handlers=[buffer_handler], 
+    level=logging.INFO  # Default level
 )
 
 
