@@ -86,12 +86,30 @@ class ImageHash:
             image = cv2_crop(image, self.args.blur_crop) # crop border for better central blur detection
 
             # estimate blur
-            blur_map = cv2.Laplacian(image, cv2.CV_64F)
-            score = numpy.var(blur_map)
+            mode = str(self.args.blur_mode).lower()
+            match mode:
+
+                # Laplacian
+                case "laplacian":
+                    blur_map = cv2.Laplacian(image, cv2.CV_64F)
+                    score = numpy.var(blur_map)
+
+                # Tenengrad (Sobel)
+                case "sobel":
+                    sobelx = cv2.Sobel(image, cv2.CV_64F, 1, 0, ksize=3)
+                    sobely = cv2.Sobel(image, cv2.CV_64F, 0, 1, ksize=3)
+                    tenengrad = numpy.sqrt(sobelx**2 + sobely**2)
+                    score = numpy.mean(tenengrad)
+
+                # Sum Modified Laplacian
+                # in my test data so far, SML seems to line up with Sobel results regularly 
+                # and is on par with Laplacian performance
+                case _:
+                    M = numpy.array([[0, -1, 0], [-1, 4, -1], [0, -1, 0]])
+                    score = numpy.abs(cv2.filter2D(image, cv2.CV_64F, M)).sum()
 
             # set attributes
             self.blur = score
-            self.blur_map = blur_map
 
             # debug print
             logging.debug(f"  {self.filename} ~ {self.blur}")

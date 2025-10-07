@@ -41,8 +41,6 @@ def main(args: argparse.Namespace):
     args.directory = directory
     logging.info(f"directory: {directory}")
 
-    # fix me - show current options here
-
     # initialize Ranking class
     core = Core(args)
 
@@ -95,14 +93,15 @@ if __name__ == '__main__':
     parser.add_argument('--blur_resize', metavar='(int_x, int_y)', type=tuple, default=None, help='blur detection image size, supports keywords "half/third/quarter"')
 
     parser.add_argument('-s', '--similarity_crop', metavar='int', default=10, help='similarity detection crop mask (in %)')
-    parser.add_argument('-b', '--blur_crop', metavar='int', default=25, help='blur detection crop mask (in %)')
+    parser.add_argument('--blur_crop', metavar='int', default=25, help='blur detection crop mask (in %)')
+    
+    parser.add_argument('-b', '--blur_mode', metavar='str', default='sum_modified_laplacian', help='blur detection algorithm (sum_modified_laplacian, sobel, laplacian)')
     
     parser.add_argument('--gaussian_blur_radius', metavar='[5],[10]', type=str, nargs='+', default=[None], help='List of radii for Gaussian blur applied before similarity detection')
     parser.add_argument('--min_contour_area', metavar='int', type=int, default=500, help='feature matching minimum contour area')
     parser.add_argument('--delta', metavar='int', type=int, default=25, help='feature matching delta threshold')
     
     parser.add_argument('-v', '--verbose', action='store_true', help='set logging level to debug')
-    #parser.add_argument('-d', '--display', action='store_true', help='display images')
     
     # show help if no args
     import sys

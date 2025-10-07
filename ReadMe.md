@@ -77,15 +77,9 @@ python image-ranking.py <directory> [options]
 
 - `-r, --resize <(int_x, int_y)>`  
   Similarity detection image size. Supports keywords `"half"`, `"third"`, `"quarter"` (default: (196, 144) or ('quarter', 'quarter') for feature matching).
-
-- `--blur_resize <(int_x, int_y)>`  
-  Blur detection image size. Supports keywords `"half"`, `"third"`, `"quarter"` (default: ('half', 'half')).
     
 - `-s, --similarity_crop <int>`  
   Similarity detection crop mask (in %, default: 10).
-
-- `-b, --blur_crop <int>`  
-  Blur detection crop mask (in %, default: 25).
 
 - `--min_contour_area <int>`  
   Feature Matching minimum contour area (default: 500).
@@ -95,6 +89,15 @@ python image-ranking.py <directory> [options]
 
 - `--delta <int>`  
   Feature Matching delta threshold (default: 25).
+
+- `-b, --blur_mode <str>`  
+  Blur detection algorithm: `sum_modified_laplacian`, `sobel`, or `laplacian` (default: `sum_modified_laplacian`).
+
+- `--blur_resize <(int_x, int_y)>`  
+  Blur detection image size. Supports keywords `"half"`, `"third"`, `"quarter"` (default: ('half', 'half')).
+
+- `--blur_crop <int>`  
+  Blur detection crop mask (in %, default: 25).
 
 - `-v, --verbose`  
   Enable debug logging.
