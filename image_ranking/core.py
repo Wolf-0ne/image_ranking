@@ -39,6 +39,9 @@ class Core(object):
                 i1 = self.images_list[i]
                 i2 = self.images_list[j]
 
+                # if i2 already has a root, skip
+                if i2.root: break
+
                 # if i1 has no root and is same group, set i1 as i2's root
                 if i1.is_same_group(i2):
                     if i1.root:
