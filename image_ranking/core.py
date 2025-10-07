@@ -98,15 +98,15 @@ class Core(object):
         # validate images array
         if len(images) == 0:
             return
-        
-        # debug print
-        logging.debug(f"group: {group_hash}")
 
         # sort images
         images.sort(key=lambda x: x.blur, reverse=True)
 
         # set initial rank
         rank = self.args.max_rank
+
+        # set debug group
+        message = f"\ngroup: {group_hash}"
 
         # iterate images
         i = 0
@@ -127,8 +127,13 @@ class Core(object):
                 if rank > 0: rank -= 1
 
             # debug print
-            logging.debug(f"file: {image.filename} blur: {image.blur} rank: {image.rank}")
+            message += f"\n  file: {image.filename} \n  blur: {image.blur} \n  rank: {image.rank}"
+            for s in image.similar:
+                message += f"\n    similarity: {s[0]} ({s[1]},{s[2]})"
                 
+        # debug print
+        logging.debug(message)
+
         #apply ratings in parallel
         def rate_image(image: ImageHash):
             darktable_set_rating(f"{image.path}.xmp", image.filename, image.rank, True)

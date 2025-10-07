@@ -43,6 +43,9 @@ class ImageHash:
 
         # image rank
         self.rank = 0
+
+        # similarity data
+        self.similar = []
         
         # parent image ref
         self.root = None
@@ -64,9 +67,9 @@ class ImageHash:
         else:
             score, res_cnts, thresh = cv2_compare_image(self.processed_image, anotherImage.processed_image, self.args)
             result = score < self.shape[0] * self.shape[1] * self.args.diff #delta is rougly number of total pixels
-        
-        # debug print
-        logging.debug(f"  {self.filename} <--> {anotherImage.filename} == {score}")
+
+        # save similarity data
+        self.similar.append((anotherImage.filename, score, result))
         
         # return compare result
         return result
@@ -110,9 +113,6 @@ class ImageHash:
 
             # set attributes
             self.blur = score
-
-            # debug print
-            logging.debug(f"  {self.filename} ~ {self.blur}")
 
             return True
 
