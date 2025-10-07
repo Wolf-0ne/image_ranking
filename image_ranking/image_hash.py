@@ -28,10 +28,10 @@ class ImageHash:
         self.content_type = content_type
 
         # cv2 processed image
-        self.processed_image = cv2_process_image(path, content_type, args)
+        self.processed_image = cv2_process_image(path, self.raw, args)
 
         # save image shape
-        self.shape = args.resize
+        self.shape = args.similarity_resize
         if self.processed_image.shape is not None:
             self.shape = self.processed_image.shape
 

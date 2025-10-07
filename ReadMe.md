@@ -30,17 +30,17 @@ I primarily shoot Fujifilm JPG, but I have added rawpy to hopefully maybe suppor
 
 ## Steps
 
-1. Image Hashing:  
+1. Image Hashing:
    Images are collected, grayscaled, optionally resized/cropped/guassian blurred, and then hashed/pre-processed in parallel.
 
-2. Grouping by Similarity, Series, and MetaData:  
-   Images are grouped via the selected method and if they are sequential. 
+2. Grouping by Similarity, Series, and MetaData:
+   Images are grouped via the selected method and if they are sequential.
 
-3. Blur Calculation:  
+3. Blur Calculation:
    Images are resized, cropped, and then blur is calculated via laplacian ( I'm looking into this for more advanced blur handling https://github.com/Utkarsh-Deshmukh/Blurry-Image-Detector )
 
-4. Ranking + Rating:  
-   Images are sorted by sharpness, then rankings are applied based on the selected method from max_rank to zero. 
+4. Ranking + Rating:
+   Images are sorted by sharpness, then rankings are applied based on the selected method from max_rank to zero.
 
 
 ## Usage
@@ -60,46 +60,46 @@ python image-ranking.py <directory> [options]
 
 ### Basic Options
 
-- `-f, --feature_matching`  
+- `-f, --feature_matching`
   Use feature matching mode for grouping.
 
-- `-e, --exclude`  
+- `-e, --exclude`
   Exclude images that already have an XMP file.
 
-- `-d, --diff <float>`  
+- `-d, --diff <float>`
   Image difference threshold for grouping (default: 0.9 or 0.4 for feature matching).
 
-- `-m, --max_rank <int>`  
+- `-m, --max_rank <int>`
   Maximum star rating to assign (default: 3).
 
-- `-t, --threads <int>`  
+- `-t, --threads <int>`
   Number of threads to use (default: number of CPU cores).
 
-- `-r, --resize <(int_x, int_y)>`  
-  Similarity detection image size. Supports keywords `"half"`, `"third"`, `"quarter"` (default: (196, 144) or ('quarter', 'quarter') for feature matching).
-    
-- `-s, --similarity_crop <int>`  
-  Similarity detection crop mask (in %, default: 10).
+- `--similarity_resize <(height, width)>`
+  Similarity detection image size. Supports keywords `"half"`, `"third"`, `"quarter"` (default: (144, 196) or ('quarter', 'quarter') for feature matching).
 
-- `--min_contour_area <int>`  
-  Feature Matching minimum contour area (default: 500).
+- `--similarity_crop <int>`
+  Similarity detection crop mask (in %, default: 15).
 
-- `--gaussian_blur_radius <[5],[10]>`  
-  List of radii for Gaussian blur applied before similarity detection (default: [None])
+- `--similarity_blur <[int]>`
+  List of radii for Gaussian blur applied before similarity detection (default: [3]).
 
-- `--delta <int>`  
-  Feature Matching delta threshold (default: 25).
+- `--feature_min_contour <int>`
+  Feature matching minimum contour area (default: 500).
 
-- `-b, --blur_mode <str>`  
+- `--feature_delta <int>`
+  Feature matching delta threshold (default: 25).
+
+- `--blur_mode <str>`
   Blur detection algorithm: `sum_modified_laplacian`, `sobel`, or `laplacian` (default: `sum_modified_laplacian`).
 
-- `--blur_resize <(int_x, int_y)>`  
+- `--blur_crop <int>`
+  Blur detection crop mask (in %, default: 30).
+
+- `--blur_resize <(height, width)>`
   Blur detection image size. Supports keywords `"half"`, `"third"`, `"quarter"` (default: ('half', 'half')).
 
-- `--blur_crop <int>`  
-  Blur detection crop mask (in %, default: 25).
-
-- `-v, --verbose`  
+- `-v, --verbose`
   Enable debug logging.
 
 ### Example
@@ -110,9 +110,9 @@ python image-ranking.py ./photoshoot -e -m 4 -v
 
 ## Citations
 
-- I used CoPilot quite a bit on this as I've only used python a handful of times 
-- mimetype filtering and grouping derived from [ezirmusitua's group-same-image.py](https://gist.github.com/ezirmusitua/1aa47567ad4ebd5679f9e3df09585e17) 
-- learned how to use Laplacian and argparse from [WillBrennan's BlurDetection2](https://github.com/WillBrennan/BlurDetection2/tree/master) 
+- I used CoPilot quite a bit on this as I've only used python a handful of times
+- mimetype filtering and grouping derived from [ezirmusitua's group-same-image.py](https://gist.github.com/ezirmusitua/1aa47567ad4ebd5679f9e3df09585e17)
+- learned how to use Laplacian and argparse from [WillBrennan's BlurDetection2](https://github.com/WillBrennan/BlurDetection2/tree/master)
 
 
 ## Notes

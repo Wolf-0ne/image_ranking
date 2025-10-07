@@ -89,17 +89,24 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--max_rank', metavar='int', type=int, default=3, help='max image rank (1 to 5)')
     parser.add_argument('-t', '--threads', metavar='int', type=int, default=default_threads, help='number of threads')
 
-    parser.add_argument('-r', '--resize', metavar='(int_x, int_y)', type=tuple, default=None, help='similarity detection image size, supports keywords "half/third/quarter"')
-    parser.add_argument('--blur_resize', metavar='(int_x, int_y)', type=tuple, default=None, help='blur detection image size, supports keywords "half/third/quarter"')
+    parser.add_argument('--similarity_resize', metavar='(height, width)', type=tuple, default=None, 
+                        help='similarity detection image size, supports keywords "half/third/quarter"')
+    parser.add_argument('--similarity_crop', metavar='int', default=15, 
+                        help='similarity detection crop mask (in %)')
+    parser.add_argument('--similarity_blur', metavar='[3]', type=str, nargs='+', default=[3],
+                        help='List of radii for Gaussian blur applied before similarity detection')
 
-    parser.add_argument('-s', '--similarity_crop', metavar='int', default=10, help='similarity detection crop mask (in %)')
-    parser.add_argument('--blur_crop', metavar='int', default=25, help='blur detection crop mask (in %)')
+    parser.add_argument('--feature_min_contour', metavar='int', type=int, default=500, 
+                        help='feature matching minimum contour area')
+    parser.add_argument('--feature_delta', metavar='int', type=int, default=25, 
+                        help='feature matching delta threshold')
     
-    parser.add_argument('-b', '--blur_mode', metavar='str', default='sum_modified_laplacian', help='blur detection algorithm (sum_modified_laplacian, sobel, laplacian)')
-    
-    parser.add_argument('--gaussian_blur_radius', metavar='[5],[10]', type=str, nargs='+', default=[None], help='List of radii for Gaussian blur applied before similarity detection')
-    parser.add_argument('--min_contour_area', metavar='int', type=int, default=500, help='feature matching minimum contour area')
-    parser.add_argument('--delta', metavar='int', type=int, default=25, help='feature matching delta threshold')
+    parser.add_argument('--blur_mode', metavar='str', default='sum_modified_laplacian', 
+                        help='blur detection algorithm (sum_modified_laplacian, sobel, laplacian)')
+    parser.add_argument('--blur_crop', metavar='int', default=30, 
+                        help='blur detection crop mask (in %)')
+    parser.add_argument('--blur_resize', metavar='(height, width)', type=tuple, default=None, 
+                        help='blur detection image size, supports keywords "half/third/quarter"')
     
     parser.add_argument('-v', '--verbose', action='store_true', help='set logging level to debug')
     
@@ -122,11 +129,11 @@ if __name__ == '__main__':
             args.diff = 0.4
         else:
             args.diff = 0.9
-    if args.resize is None:
+    if args.similarity_resize is None:
         if args.feature_matching:
-            args.resize = ('quarter', 'quarter')
+            args.similarity_resize = ('quarter', 'quarter')
         else:
-            args.resize = (196, 144)
+            args.similarity_resize = (144, 196)
     if args.blur_resize is None:
        args.blur_resize = ('half', 'half')
 

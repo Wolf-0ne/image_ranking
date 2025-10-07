@@ -3,72 +3,66 @@ import imutils
 import argparse
 import rawpy
 
-def cv2_process_image(path: str, content_type: tuple, args: argparse.Namespace): 
+def cv2_process_image(path: str, raw: bool, args: argparse.Namespace, debug: bool = False):
 
     # get image
-    image = cv2_get_grayscale_image(path, content_type)
+    image = cv2_get_image(path, raw, True)
 
     # resize image
-    if args.resize is not None:
-        image = cv2_resize(image, args.resize)
+    if args.similarity_resize is not None:
+        image = cv2_resize(image, args.similarity_resize)
+        if debug:
+            cv2.imshow("resize", image)
 
     # apply blur
-    for radius in args.gaussian_blur_radius:
+    blur = args.similarity_blur
+    blur = [5, 3]
+    for radius in blur:
         if radius is not None:
             image = cv2.GaussianBlur(image, (radius, radius), 0)
-    
+            if debug:
+                cv2.imshow(f"blur{radius}", image)
+
     # apply crop
-    if args.similarity_crop > 0:
+    crop = args.similarity_crop
+    if crop > 0:
         image = cv2_crop(image, args.similarity_crop)
-    
-    # return image data
-    return image
+        if debug:
+            cv2.imshow(f"crop{crop}", image)
 
-
-def cv2_get_image(path: str, content_type: tuple, grayscale: bool = False): 
-
-    image = None
-    
-    # read image (raw)
-    if content_type[1] is not None and 'x-' in content_type[1]:
-        color = cv2.COLOR_RGB2GRAY if grayscale else cv2.COLOR_RGB2BGR
-        with rawpy.imread(path) as raw:
-            rgb = raw.postprocess(use_auto_wb=True)
-            image = cv2.cvtColor(rgb, color)
-        
-    # read image (normal)
-    else:
-        image = cv2.imread(path)
-        if grayscale:
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    if debug:
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
     # return image data
     return image
 
-def cv2_get_grayscale_image(path: str, content_type: tuple): 
 
-    image = None
+def cv2_get_image(path: str, raw: bool = False, grayscale: bool = False):
+
+    rgb = None
+    color = cv2.COLOR_RGB2GRAY if grayscale else cv2.COLOR_RGB2BGR
 
     # read image (raw)
-    if content_type[1] is not None and 'x-' in content_type[1]:
+    if raw:
         with rawpy.imread(path) as raw:
             rgb = raw.postprocess(use_auto_wb=True)
-            image = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
-        
+
     # read image (normal)
     else:
-        image = cv2.imread(path)
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+        rgb = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+
+    image = cv2.cvtColor(rgb, color)
 
     # return image data
     return image
 
 
-def cv2_resize(image, resize: tuple):
+def cv2_resize(image, shape: tuple):
 
     # resize image
-    if resize is not None:
-            
+    if shape is not None:
+
         # map strings to float
         def map_fractional(v) -> float:
             fractional_map = {
@@ -78,21 +72,18 @@ def cv2_resize(image, resize: tuple):
             }
             v = fractional_map.get(v.lower()) if type(v) is str else v
             return v if v is not None else 1
-        
-        if type(resize[0]) is str:
-            resize = (round(image.shape[0] * map_fractional(resize[0])), resize[1])
-        if type(resize[1]) is str:
-            resize = (resize[0], round(image.shape[1] * map_fractional(resize[1])))
+
+        if type(shape[0]) is str:
+            shape = (round(image.shape[0] * map_fractional(shape[0])), shape[1])
+        if type(shape[1]) is str:
+            shape = (shape[0], round(image.shape[1] * map_fractional(shape[1])))
 
         # validate resize
-        if type(resize[0]) is not int or type(resize[1]) is not int:
+        if type(shape[0]) is not int or type(shape[1]) is not int:
             raise ValueError("resize must be a tuple of two integers or fractional strings ('half', 'third', 'quarter')")
 
-        # flip resize from x,y to w,h
-        resize = (resize[1], resize[0])
-
         # resize
-        image = cv2.resize(image, resize)
+        image = cv2.resize(image, shape)
 
     # return image data
     return image
@@ -134,8 +125,8 @@ def cv2_compare_image(a, b, args: argparse.Namespace):
     # compute the absolute difference between frames
     frame_delta = cv2.absdiff(a, b)
 
-    # threshold the delta image 
-    thresh = cv2.threshold(frame_delta, args.delta_threshold, 255, cv2.THRESH_BINARY)[1]
+    # threshold the delta image
+    thresh = cv2.threshold(frame_delta, args.similarity_delta, 255, cv2.THRESH_BINARY)[1]
 
     # dilate the thresholded image to fill in holes
     thresh = cv2.dilate(thresh, None, iterations=2)
@@ -148,7 +139,7 @@ def cv2_compare_image(a, b, args: argparse.Namespace):
     score = 0
     res_cnts = []
     for c in cnts:
-        if cv2.contourArea(c) < args.min_contour_area:
+        if cv2.contourArea(c) < args.similarity_min_contour:
             continue
 
         res_cnts.append(c)
@@ -156,3 +147,4 @@ def cv2_compare_image(a, b, args: argparse.Namespace):
 
     # return score, contours and threshold image
     return score, res_cnts, thresh
+
