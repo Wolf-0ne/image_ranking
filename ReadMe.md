@@ -34,7 +34,7 @@ I primarily shoot Fujifilm JPG, but I have added rawpy to hopefully maybe suppor
    Images are collected, grayscaled, optionally resized/cropped/guassian blurred, and then hashed/pre-processed in parallel.
 
 2. Grouping by Similarity, Series, and MetaData:
-   Images are grouped via the selected method and if they are sequential.
+   Images are grouped via the selected method and if they are sequential. Camera Body and Lens Metadata is also checked.
 
 3. Blur Calculation:
    Images are resized, cropped, and then blur is calculated via laplacian ( I'm looking into this for more advanced blur handling https://github.com/Utkarsh-Deshmukh/Blurry-Image-Detector )

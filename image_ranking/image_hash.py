@@ -3,10 +3,13 @@ import hashlib
 import cv2
 import logging
 import numpy
+import exifread
 
 from image_ranking.cv2_image_hash import cv2_process_image, cv2_compare_image, cv2_crop, cv2_resize
 from image_ranking.image_similarity import image_similarity
 
+#suppress exifread debug log
+logging.getLogger("exifread").setLevel(logging.INFO)
 
 class ImageHash:
 
@@ -27,6 +30,20 @@ class ImageHash:
         # image mime type
         self.content_type = content_type
 
+        # raw image flag
+        self.raw = content_type[1] is not None and 'x-' in content_type[1]
+
+        # get exif data
+        with open(path, 'rb') as f:
+            self.exif = exifread.process_file(f)
+        #interesting exif tags:
+        #BlurWarning - not sure what these values show
+        #FocusWarning
+        #ExposureWarning
+        #FocusMode
+        #AFPointSet - could use these to target blur detection?
+        #FocusPixel
+
         # cv2 processed image
         self.processed_image = cv2_process_image(path, self.raw, args)
 
@@ -46,17 +63,31 @@ class ImageHash:
 
         # similarity data
         self.similar = []
-        
+
         # parent image ref
         self.root = None
-
-        #logging.debug(f"  {self.filename} ###")
 
 
     def is_same_group(self, anotherImage) -> bool:
 
         score = 0
         result = False
+
+        # compare exif data
+        def get_camera_lens_exif(image) -> tuple:
+            return (
+                str(image.exif.get('Image Make', None)),
+                str(image.exif.get('Image Model', None)),
+                str(image.exif.get('EXIF LensMake', None)),
+                str(image.exif.get('EXIF LensModel', None))
+            )
+
+        # return if exif data mismatch
+        if not (get_camera_lens_exif(self) == get_camera_lens_exif(anotherImage)):
+            logging.debug(f"EXIF mismatch: {self.filename} and {anotherImage.filename}")
+            logging.debug(f"  {get_camera_lens_exif(self)}")
+            logging.debug(f"  {get_camera_lens_exif(anotherImage)}")
+            return result
 
         # feature matching
         if self.args.feature_matching:
@@ -70,10 +101,9 @@ class ImageHash:
 
         # save similarity data
         self.similar.append((anotherImage.filename, score, result))
-        
+
         # return compare result
         return result
-    
 
     def calculate_blur(self):
         try:
@@ -83,7 +113,7 @@ class ImageHash:
             if image is None:
                 logging.warning(f'warning! failed to read image from {self.path}; skipping!')
                 return
-            
+
             # resize and crop
             image = cv2_resize(image, self.args.blur_resize) # resize to speed up processing
             image = cv2_crop(image, self.args.blur_crop) # crop border for better central blur detection
@@ -105,7 +135,7 @@ class ImageHash:
                     score = numpy.mean(tenengrad)
 
                 # Sum Modified Laplacian
-                # in my test data so far, SML seems to line up with Sobel results regularly 
+                # in my test data so far, SML seems to line up with Sobel results regularly
                 # and is on par with Laplacian performance
                 case _:
                     M = numpy.array([[0, -1, 0], [-1, 4, -1], [0, -1, 0]])
@@ -127,4 +157,3 @@ class ImageHash:
         # get image root hash, if self is root, get self hash
         if not self.root: return self.hash
         return self.root.hash
-    
