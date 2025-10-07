@@ -22,9 +22,7 @@ I primarily shoot Fujifilm JPG, but I have added rawpy to hopefully maybe suppor
 ## ToDo
 
 - Add option for second pass with Feature Detection to focus on images not in groups
-- Add metadata checks ( for lens changes or to catch image overlap in sequences between my two cameras )
-  - Metadata checks are just fairly simple shortcuts to avoid processing (model, lens, date).
-- Add Group Tagging
+- Add Group Tagging to xmp files
 - Add Object Detection ( dog, person, flower, rock?, landscape, etc ) to improve group tagging
 
 

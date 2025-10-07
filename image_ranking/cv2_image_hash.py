@@ -16,7 +16,6 @@ def cv2_process_image(path: str, raw: bool, args: argparse.Namespace, debug: boo
 
     # apply blur
     blur = args.similarity_blur
-    blur = [5, 3]
     for radius in blur:
         if radius is not None:
             image = cv2.GaussianBlur(image, (radius, radius), 0)
@@ -80,7 +79,10 @@ def cv2_resize(image, shape: tuple):
 
         # validate resize
         if type(shape[0]) is not int or type(shape[1]) is not int:
-            raise ValueError("resize must be a tuple of two integers or fractional strings ('half', 'third', 'quarter')")
+            raise ValueError(
+                "resize must be a tuple of two integers or "
+                "fractional strings ('half', 'third', 'quarter')"
+            )
 
         # resize
         image = cv2.resize(image, shape)

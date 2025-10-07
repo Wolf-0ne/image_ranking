@@ -8,11 +8,13 @@ from logging.handlers import MemoryHandler
 
 from pathlib import Path
 
-from image_ranking.core import Core   
+from image_ranking.core import Core
 
 # create formatter
 console_handler = logging.StreamHandler()
-console_handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(message)s', datefmt='%H:%M:%S'))
+console_handler.setFormatter(
+    logging.Formatter('%(asctime)s [%(levelname)s] %(message)s',
+                      datefmt='%H:%M:%S'))
 
 # create memory buffer
 buffer_handler = MemoryHandler(
@@ -23,14 +25,14 @@ buffer_handler = MemoryHandler(
 
 # setup logging
 logging.basicConfig(
-    handlers=[buffer_handler], 
+    handlers=[buffer_handler],
     level=logging.INFO  # Default level
 )
 
 
 # main process
 def main(args: argparse.Namespace):
-    
+
     # get image directory
     directory = args.directory
     if not os.path.isabs(directory):
@@ -81,40 +83,45 @@ if __name__ == '__main__':
 
     parser.add_argument('directory', type=str, help='directory of images')
 
-    parser.add_argument('-f', '--feature_matching', action='store_true', help='feature matching mode')
-    parser.add_argument('-e', '--exclude', action='store_true', help='exclude files with existing xmp')
+    parser.add_argument('-f', '--feature_matching', action='store_true',
+                        help='feature matching mode')
+    parser.add_argument('-e', '--exclude', action='store_true',
+                        help='exclude files with existing xmp')
 
-    parser.add_argument('-d', '--diff', metavar='float', type=float, default=0, help='image difference threshold')
+    parser.add_argument('-d', '--diff', metavar='float', type=float, default=0,
+                        help='image difference threshold')
 
-    parser.add_argument('-m', '--max_rank', metavar='int', type=int, default=3, help='max image rank (1 to 5)')
-    parser.add_argument('-t', '--threads', metavar='int', type=int, default=default_threads, help='number of threads')
+    parser.add_argument('-m', '--max_rank', metavar='int', type=int, default=3,
+                        help='max image rank (1 to 5)')
+    parser.add_argument('-t', '--threads', metavar='int', type=int, default=default_threads,
+                        help='number of threads')
 
-    parser.add_argument('--similarity_resize', metavar='(height, width)', type=tuple, default=None, 
+    parser.add_argument('--similarity_resize', metavar='(height, width)', type=tuple, default=None,
                         help='similarity detection image size, supports keywords "half/third/quarter"')
-    parser.add_argument('--similarity_crop', metavar='int', default=15, 
+    parser.add_argument('--similarity_crop', metavar='int', default=15,
                         help='similarity detection crop mask (in %)')
     parser.add_argument('--similarity_blur', metavar='[3]', type=str, nargs='+', default=[3],
                         help='List of radii for Gaussian blur applied before similarity detection')
 
-    parser.add_argument('--feature_min_contour', metavar='int', type=int, default=500, 
+    parser.add_argument('--feature_min_contour', metavar='int', type=int, default=500,
                         help='feature matching minimum contour area')
-    parser.add_argument('--feature_delta', metavar='int', type=int, default=25, 
+    parser.add_argument('--feature_delta', metavar='int', type=int, default=25,
                         help='feature matching delta threshold')
-    
-    parser.add_argument('--blur_mode', metavar='str', default='sum_modified_laplacian', 
+
+    parser.add_argument('--blur_mode', metavar='str', default='sum_modified_laplacian',
                         help='blur detection algorithm (sum_modified_laplacian, sobel, laplacian)')
-    parser.add_argument('--blur_crop', metavar='int', default=30, 
+    parser.add_argument('--blur_crop', metavar='int', default=30,
                         help='blur detection crop mask (in %)')
-    parser.add_argument('--blur_resize', metavar='(height, width)', type=tuple, default=None, 
+    parser.add_argument('--blur_resize', metavar='(height, width)', type=tuple, default=None,
                         help='blur detection image size, supports keywords "half/third/quarter"')
-    
+
     parser.add_argument('-v', '--verbose', action='store_true', help='set logging level to debug')
-    
+
     # show help if no args
     import sys
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
-        exit(1) 
+        exit(1)
 
     # parse args
     args = parser.parse_args();
@@ -144,6 +151,6 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         logging.warning("process interrupted by user")
 
-    # end 
+    # end
     end_time = time.time()
     logging.info(f"execution time {end_time - start_time:.2f} seconds")

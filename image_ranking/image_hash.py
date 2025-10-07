@@ -5,7 +5,12 @@ import logging
 import numpy
 import exifread
 
-from image_ranking.cv2_image_hash import cv2_process_image, cv2_compare_image, cv2_crop, cv2_resize
+from image_ranking.cv2_image_hash import (
+    cv2_process_image,
+    cv2_compare_image,
+    cv2_crop,
+    cv2_resize
+)
 from image_ranking.image_similarity import image_similarity
 
 #suppress exifread debug log
@@ -96,8 +101,12 @@ class ImageHash:
 
         # cv2 hash compare
         else:
-            score, res_cnts, thresh = cv2_compare_image(self.processed_image, anotherImage.processed_image, self.args)
-            result = score < self.shape[0] * self.shape[1] * self.args.diff #delta is rougly number of total pixels
+            score, res_cnts, thresh = cv2_compare_image(
+                self.processed_image,
+                anotherImage.processed_image,
+                self.args)
+            #delta is rougly number of total pixels
+            result = score < self.shape[0] * self.shape[1] * self.args.diff
 
         # save similarity data
         self.similar.append((anotherImage.filename, score, result))
@@ -116,7 +125,7 @@ class ImageHash:
 
             # resize and crop
             image = cv2_resize(image, self.args.blur_resize) # resize to speed up processing
-            image = cv2_crop(image, self.args.blur_crop) # crop border for better central blur detection
+            image = cv2_crop(image, self.args.blur_crop) # crop for central blur detection
 
             # estimate blur
             mode = str(self.args.blur_mode).lower()
@@ -147,7 +156,7 @@ class ImageHash:
             return True
 
         except Exception as e:
-            logging.error(f"error calculating blur for {self.path}: {e}")
+            logging.error(f"error calculating blur for {self.path}: {e}", exec_info=True)
 
         return False
 
