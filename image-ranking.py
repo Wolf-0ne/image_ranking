@@ -100,13 +100,12 @@ if __name__ == '__main__':
                         help='similarity detection image size, supports keywords "half/third/quarter"')
     parser.add_argument('--similarity_crop', metavar='int', default=15,
                         help='similarity detection crop mask (in %)')
-    parser.add_argument('--similarity_blur', metavar='[3]', type=str, nargs='+', default=[3],
+    parser.add_argument('--similarity_blur', metavar='[5]', type=str, nargs='+', default=[5],
                         help='List of radii for Gaussian blur applied before similarity detection')
-
-    parser.add_argument('--feature_min_contour', metavar='int', type=int, default=500,
-                        help='feature matching minimum contour area')
-    parser.add_argument('--feature_delta', metavar='int', type=int, default=25,
-                        help='feature matching delta threshold')
+    parser.add_argument('--similarity_min_contour', metavar='int', type=int, default=500,
+                        help='Similarity minimum contour area')
+    parser.add_argument('--similarity_delta', metavar='int', type=int, default=25,
+                        help='Similarity delta threshold')
 
     parser.add_argument('--blur_mode', metavar='str', default='sum_modified_laplacian',
                         help='blur detection algorithm (sum_modified_laplacian, sobel, laplacian)')
@@ -135,7 +134,7 @@ if __name__ == '__main__':
         if args.feature_matching:
             args.diff = 0.4
         else:
-            args.diff = 0.9
+            args.diff = 0.6
     if args.similarity_resize is None:
         if args.feature_matching:
             args.similarity_resize = ('quarter', 'quarter')

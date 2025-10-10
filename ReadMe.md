@@ -82,11 +82,11 @@ python image-ranking.py <directory> [options]
 - `--similarity_blur <[int]>`
   List of radii for Gaussian blur applied before similarity detection (default: [3]).
 
-- `--feature_min_contour <int>`
-  Feature matching minimum contour area (default: 500).
+- `--similarity_min_contour <int>`
+  Similarity minimum contour area (default: 500).
 
-- `--feature_delta <int>`
-  Feature matching delta threshold (default: 25).
+- `--similarity_delta <int>`
+  Similarity delta threshold (default: 25).
 
 - `--blur_mode <str>`
   Blur detection algorithm: `sum_modified_laplacian`, `sobel`, or `laplacian` (default: `sum_modified_laplacian`).

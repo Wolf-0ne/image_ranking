@@ -1,4 +1,3 @@
-
 import argparse
 import logging
 from tqdm import tqdm
@@ -50,11 +49,11 @@ class Core(object):
                         i2.root = i1
 
                 else: break
-    
+
 
     def calculate_blur(self):
         logging.info("calculate_blur")
-        
+
         # calculate blur in parallel
         def blur(image: ImageHash):
             return image.calculate_blur()
@@ -80,7 +79,7 @@ class Core(object):
 
             # if group changed, apply ratings
             if group_hash != previous_group_hash:
-                
+
                 # process current group
                 if previous_group_hash is not None:
                     self.apply_group_ratings(image_group, group_hash)
@@ -93,7 +92,7 @@ class Core(object):
             image_group.append(image)
 
         # process last group
-        self.apply_group_ratings(image_group, group_hash) 
+        self.apply_group_ratings(image_group, group_hash)
 
 
     def apply_group_ratings(self, images: list, group_hash: str = None):
@@ -121,19 +120,19 @@ class Core(object):
             image.rank = rank
             # increment files
             i += 1
-            
+
             # decrement rank, distribute results
             if i == next:
                 next = next * 2 + i
-                if next * 2 > len(images): 
+                if next * 2 > len(images):
                     next -= 1
                 if rank > 0: rank -= 1
 
             # debug print
-            message += f"\n  file: {image.filename} \n  blur: {image.blur} \n  rank: {image.rank}"
+            message += f"\n  file: {image.filename} \n    blur: {image.blur} \n    rank: {image.rank}"
             for s in image.similar:
                 message += f"\n    similarity: {s[0]} ({s[1]},{s[2]})"
-                
+
         # debug print
         logging.debug(message)
 
