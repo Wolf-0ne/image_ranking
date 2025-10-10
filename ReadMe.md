@@ -73,7 +73,7 @@ python image-ranking.py <directory> [options]
 - `-t, --threads <int>`
   Number of threads to use (default: number of CPU cores).
 
-- `--similarity_resize <(height, width)>`
+- `--similarity_resize <(width, height)>`
   Similarity detection image size. Supports keywords `"half"`, `"third"`, `"quarter"` (default: (144, 196) or ('quarter', 'quarter') for feature matching).
 
 - `--similarity_crop <int>`
@@ -94,7 +94,7 @@ python image-ranking.py <directory> [options]
 - `--blur_crop <int>`
   Blur detection crop mask (in %, default: 30).
 
-- `--blur_resize <(height, width)>`
+- `--blur_resize <(width, height)>`
   Blur detection image size. Supports keywords `"half"`, `"third"`, `"quarter"` (default: ('half', 'half')).
 
 - `-v, --verbose`

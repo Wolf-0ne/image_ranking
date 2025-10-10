@@ -14,10 +14,20 @@ def cv2_process_image(path: str, raw: bool, args: argparse.Namespace, debug: boo
         if debug:
             cv2.imshow("resize", image)
 
-    # apply blur
+    # guassian blur
     blur = args.similarity_blur
     for radius in blur:
         if radius is not None:
+
+            # ensure radius is at least 1
+            if radius < 1:
+                radius = 1
+
+            # ensure radius is odd
+            if radius % 2 == 0:
+                radius += 1
+
+            # apply blur
             image = cv2.GaussianBlur(image, (radius, radius), 0)
             if debug:
                 cv2.imshow(f"blur{radius}", image)
@@ -81,7 +91,7 @@ def cv2_resize(image, shape: tuple):
             shape = (shape[0], round(image.shape[1] * map_fractional(shape[1])))
 
         # validate resize
-        if type(shape[0]) is not int or type(shape[1]) is not int:
+        if not isinstance(shape[0], int) or not isinstance(shape[1], int):
             raise ValueError(
                 "resize must be a tuple of two integers or "
                 "fractional strings ('half', 'third', 'quarter')"
@@ -95,22 +105,27 @@ def cv2_resize(image, shape: tuple):
 
 
 def cv2_crop(image, percent):
-    h = image.shape[0]
-    w = image.shape[1]
+
+    # validate crop percentage
+    if percent <= 0 or percent >= 100:
+        raise ValueError("Crop percentage must be between 0 and 100")
+
+    w = image.shape[0] #width
+    h = image.shape[1] #height
     t = percent / 2 # half of crop from each size
 
-    h_min = int(h * t / 100)
     w_min = int(w * t / 100)
+    h_min = int(h * t / 100)
 
-    h_max = h - h_min
     w_max = w - w_min
+    h_max = h - h_min
 
-    return image[h_min:h_max, w_min:w_max]
+    return image[w_min:w_max, h_min:h_max]
 
 
 def cv2_draw_color_mask(image, borders, color=(0, 0, 0)):
-    h = image.shape[0]
-    w = image.shape[1]
+    w = image.shape[0]
+    h = image.shape[1]
 
     x_min = int(borders[0] * w / 100)
     x_max = w - int(borders[2] * w / 100)
@@ -126,6 +141,10 @@ def cv2_draw_color_mask(image, borders, color=(0, 0, 0)):
 
 
 def cv2_compare_image(a, b, args: argparse.Namespace):
+
+    # validate image shape
+    if a.shape != b.shape:
+        raise ValueError("Images must be the same size for comparison")
 
     # compute the absolute difference between frames
     frame_delta = cv2.absdiff(a, b)

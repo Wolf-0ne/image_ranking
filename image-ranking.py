@@ -96,7 +96,7 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--threads', metavar='int', type=int, default=default_threads,
                         help='number of threads')
 
-    parser.add_argument('--similarity_resize', metavar='(height, width)', type=tuple, default=None,
+    parser.add_argument('--similarity_resize', metavar='(width, height)', type=tuple, default=None,
                         help='similarity detection image size, supports keywords "half/third/quarter"')
     parser.add_argument('--similarity_crop', metavar='int', default=15,
                         help='similarity detection crop mask (in %)')
@@ -111,7 +111,7 @@ if __name__ == '__main__':
                         help='blur detection algorithm (sum_modified_laplacian, sobel, laplacian)')
     parser.add_argument('--blur_crop', metavar='int', default=30,
                         help='blur detection crop mask (in %)')
-    parser.add_argument('--blur_resize', metavar='(height, width)', type=tuple, default=None,
+    parser.add_argument('--blur_resize', metavar='(width, height)', type=tuple, default=None,
                         help='blur detection image size, supports keywords "half/third/quarter"')
 
     parser.add_argument('-v', '--verbose', action='store_true', help='set logging level to debug')
