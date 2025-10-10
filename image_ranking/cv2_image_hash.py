@@ -1,12 +1,12 @@
 import cv2
 import imutils
 import argparse
-import rawpy
+import numpy as np
 
-def cv2_process_image(path: str, raw: bool, args: argparse.Namespace, debug: bool = False):
+def cv2_process_image(path: str, content_type: str, args: argparse.Namespace, debug: bool = False):
 
     # get image
-    image = cv2_get_image(path, raw, True)
+    image = cv2_get_image(path, content_type, True)
 
     # resize image
     if args.similarity_resize is not None:
@@ -47,16 +47,32 @@ def cv2_process_image(path: str, raw: bool, args: argparse.Namespace, debug: boo
     return image
 
 
-def cv2_get_image(path: str, raw_image: bool = False, grayscale: bool = False):
+def cv2_get_image(path: str, content_type: str, grayscale: bool = False):
 
     image = None
 
     # read image (raw)
-    if raw_image:
+    from image_ranking.content_type import is_raw_image_file
+    if is_raw_image_file(content_type):
+        import rawpy
         with rawpy.imread(path) as raw:
-            color = cv2.COLOR_RGB2GRAY if grayscale else cv2.COLOR_RGB2BGR
             rgb = raw.postprocess(output_color=rawpy.ColorSpace.sRGB)
-            image = cv2.cvtColor(rgb, color)
+            image = cv2.cvtColor(rgb, cv2_get_rgb_color_map(grayscale))
+
+    # read image (heic)
+    elif content_type == 'image/heic':
+        from PIL import Image
+        import pillow_heif
+
+        heif_file = pillow_heif.read_heif(path)
+        img = Image.frombytes(
+            heif_file.mode,
+            heif_file.size,
+            heif_file.data,
+            "raw"
+        )
+        rgb = np.array(img)
+        image = cv2.cvtColor(rgb, cv2_get_rgb_color_map(grayscale))
 
     # read image (normal)
     else:
@@ -68,6 +84,10 @@ def cv2_get_image(path: str, raw_image: bool = False, grayscale: bool = False):
 
     # return image data
     return image
+
+
+def cv2_get_rgb_color_map(grayscale: bool = False):
+    return cv2.COLOR_RGB2GRAY if grayscale else cv2.COLOR_RGB2BGR
 
 
 def cv2_resize(image, shape: tuple):

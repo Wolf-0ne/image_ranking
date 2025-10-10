@@ -24,7 +24,7 @@ class ImageHash:
 
         # image mime type
         from image_ranking.content_type import get_mime_type
-        self.content_type = get_mime_type(filename)
+        self.content_type = get_mime_type(self.path)
 
         # image blur value
         self.blur = None
@@ -72,7 +72,7 @@ class ImageHash:
 
         # cv2 processed image
         from image_ranking.cv2_image_hash import cv2_process_image
-        self.processed_image = cv2_process_image(self.path, self.raw_image, self.args)
+        self.processed_image = cv2_process_image(self.path, self.content_type, self.args)
 
         # save image shape
         self.shape = self.args.similarity_resize
