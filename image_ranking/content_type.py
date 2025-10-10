@@ -1,6 +1,5 @@
 import mimetypes
 import os
-
 import logging
 
 # Raw file extensions and their mime types
@@ -32,6 +31,7 @@ def get_mime_type(file: str) -> str:
 
     # Avoid processing invalid file types
     if get_magic_type(file) != content_type[0]:
+        logging.debug(f"Skipping due to invalid magic bytes: {file}, type: {content_type[0]}")
         return None
 
     return content_type[0]
@@ -42,9 +42,9 @@ def is_image_file(content_type: str) -> bool:
 def is_raw_image_file(content_type: str) -> bool:
     return content_type and content_type.startswith('image/x-')
 
-MAGIC_BYTE_SIGNATURES = {
+MAGIC_BYTE_SIGNATURES = [
     # JPEG
-    (b'\xFF\xD8\xFF', 'image/jpeg', (-1,)),  # JPEG files start with FF D8 FF
+    (b'\xFF\xD8\xFF', 'image/jpeg', (0,)),  # JPEG files start with FF D8 FF
 
     # PNG
     (b'\x89PNG\r\n\x1a\n', 'image/png', (0,)),  # PNG files start at offset 0
@@ -71,8 +71,8 @@ MAGIC_BYTE_SIGNATURES = {
     (b'RW2', 'image/x-panasonic-rw2', (8,)),
 
     # TIFF (used by some RAW)
-    (b'II*\x00', 'image/x-tiff', (-1,)),        # TIFF (little-endian)
-    (b'MM\x00*', 'image/x-tiff', (-1,)),        # TIFF (big-endian)
+    (b'II*\x00', 'image/x-tiff', (0,)),        # TIFF (little-endian)
+    (b'MM\x00*', 'image/x-tiff', (0,)),        # TIFF (big-endian)
 
     # HEIC/HEIF (ISO Base Media File Format, 'ftypheic' or 'ftypheix' at offset 4)
     (b'ftypheic', 'image/heic', (4,)),
@@ -80,7 +80,7 @@ MAGIC_BYTE_SIGNATURES = {
     (b'ftyphevc', 'image/heic', (4,)),
     (b'ftypmif1', 'image/heic', (4,)),
     (b'ftypmsf1', 'image/heic', (4,)),
-}
+]
 
 def get_magic_type(file_path):
 
@@ -92,19 +92,14 @@ def get_magic_type(file_path):
         #iterate magic byte signatures
         for sig, mime, offsets in MAGIC_BYTE_SIGNATURES:
 
-            logging.debug(f"Checking signature for {mime} at offsets {offsets}")
-
             # iterate all offsets
             for offset in offsets:
-                # signature present at any offset
-                if offset == -1:
-                    if sig in header:
-                        return mime
 
                 # signature present at specific offset
-                else:
-                    if header[offset:offset+len(sig)] == sig:
-                        return mime
+                if header[offset:offset+len(sig)] == sig:
+                    return mime
 
-    # no signature matched
+        # no signature matched
+        logging.debug(f"No magic bytes matched for {header} in file {file_path}")
+
     return None
