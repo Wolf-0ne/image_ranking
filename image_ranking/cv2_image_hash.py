@@ -56,31 +56,29 @@ def cv2_get_image(path: str, content_type: str, grayscale: bool = False):
     if is_raw_image_file(content_type):
         import rawpy
         with rawpy.imread(path) as raw:
-            rgb = raw.postprocess(output_color=rawpy.ColorSpace.sRGB)
-            image = cv2.cvtColor(rgb, cv2_get_rgb_color_map(grayscale))
+            image = raw.postprocess(output_color=rawpy.ColorSpace.sRGB)
+            image = cv2.cvtColor(image, cv2_get_rgb_color_map(grayscale))
 
     # read image (heic)
     elif content_type == 'image/heic':
         from PIL import Image
         import pillow_heif
 
-        heif_file = pillow_heif.read_heif(path)
-        img = Image.frombytes(
-            heif_file.mode,
-            heif_file.size,
-            heif_file.data,
+        image = pillow_heif.read_heif(path)
+        image = Image.frombytes(
+            image.mode,
+            image.size,
+            image.data,
             "raw"
         )
-        rgb = np.array(img)
-        image = cv2.cvtColor(rgb, cv2_get_rgb_color_map(grayscale))
+        image = np.array(image)
+        image = cv2.cvtColor(image, cv2_get_rgb_color_map(grayscale))
 
     # read image (normal)
     else:
-        bgr = cv2.imread(path, cv2.IMREAD_COLOR)
+        image = cv2.imread(path, cv2.IMREAD_COLOR)
         if grayscale:
-            image = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
-        else:
-            image = bgr
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # return image data
     return image
