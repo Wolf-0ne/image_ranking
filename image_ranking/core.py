@@ -108,7 +108,7 @@ class Core(object):
         rank = self.args.max_rank
 
         # set debug group
-        message = f"\ngroup: {group_hash}"
+        message = f"\ngroup: {group_hash}\n  metric: {images[0].metric}"
 
         # iterate images
         i = 0

@@ -1,64 +1,30 @@
-
 import hashlib
-import cv2
 import logging
-import numpy
-import exifread
+import os
 
-from image_ranking.cv2_image_hash import (
-    cv2_process_image,
-    cv2_compare_image,
-    cv2_crop,
-    cv2_resize
-)
-from image_ranking.image_similarity import image_similarity
-
-#suppress exifread debug log
-logging.getLogger("exifread").setLevel(logging.INFO)
+#suppress exifread warnings
+logging.getLogger("exifread").setLevel(logging.ERROR)
 
 class ImageHash:
 
     """
-    Image to group class
+    Image data and methods for comparing images
+    :param filename: image filename
     """
-    def __init__(self, filename: str, path: str, content_type: str, args):
+    def __init__(self, filename: str, args):
 
-        # save args
+        # set args
         self.args = args
 
-        # image original path
-        self.path = path
-
-        # image filename
+        # set filename
         self.filename = filename
 
+        # image original path
+        self.path = os.path.join(args.directory, filename)
+
         # image mime type
-        self.content_type = content_type
-
-        # raw image flag
-        self.raw = content_type[1] is not None and 'x-' in content_type[1]
-
-        # get exif data
-        with open(path, 'rb') as f:
-            self.exif = exifread.process_file(f)
-        #interesting exif tags:
-        #BlurWarning - not sure what these values show
-        #FocusWarning
-        #ExposureWarning
-        #FocusMode
-        #AFPointSet - could use these to target blur detection?
-        #FocusPixel
-
-        # cv2 processed image
-        self.processed_image = cv2_process_image(path, self.raw, args)
-
-        # save image shape
-        self.shape = args.similarity_resize
-        if self.processed_image.shape is not None:
-            self.shape = self.processed_image.shape
-
-        # hash image content
-        self.hash = hashlib.md5(str(self.processed_image).encode()).hexdigest()
+        from image_ranking.content_type import get_mime_type
+        self.content_type = get_mime_type(filename)
 
         # image blur value
         self.blur = None
@@ -73,40 +39,81 @@ class ImageHash:
         self.root = None
 
 
+    def validate(self) -> bool:
+
+        # validate image file
+        from image_ranking.content_type import is_image_file
+        if not is_image_file(self.content_type):
+            return False
+
+        # Validate file exists
+        if os.path.isfile(self.path):
+
+            # Ignore already processed file
+            if self.args.exclude:
+                if os.path.isfile(f"{self.path}.xmp"):
+                    return None
+
+            # file exists and is valid
+            return True
+
+        # file does not exist
+        return False
+
+    def initialize(self):
+
+        # raw image flag
+        from image_ranking.content_type import is_raw_image_file
+        self.raw_image = is_raw_image_file(self.content_type)
+
+        # get exif data
+        from image_ranking.image_exif import get_exif
+        self.exif = get_exif(self.path)
+
+        # cv2 processed image
+        from image_ranking.cv2_image_hash import cv2_process_image
+        self.processed_image = cv2_process_image(self.path, self.raw_image, self.args)
+
+        # save image shape
+        self.shape = self.args.similarity_resize
+        if self.processed_image.shape is not None:
+            self.shape = self.processed_image.shape
+
+        # hash image content
+        self.hash = hashlib.md5(str(self.processed_image).encode()).hexdigest()
+
+        # calculate score threshold
+        self.metric = self.args.diff
+        if not self.args.feature_matching:
+            self.metric = self.shape[0] * self.shape[1] * self.metric
+
+
     def is_same_group(self, anotherImage) -> bool:
 
         score = 0
         result = False
 
-        # compare exif data
-        def get_camera_lens_exif(image) -> tuple:
-            return (
-                str(image.exif.get('Image Make', None)),
-                str(image.exif.get('Image Model', None)),
-                str(image.exif.get('EXIF LensMake', None)),
-                str(image.exif.get('EXIF LensModel', None))
-            )
-
         # return if exif data mismatch
-        if not (get_camera_lens_exif(self) == get_camera_lens_exif(anotherImage)):
+        from image_ranking.image_exif import exif_mismatch
+        if exif_mismatch(self.exif, anotherImage.exif):
             logging.debug(f"EXIF mismatch: {self.filename} and {anotherImage.filename}")
-            logging.debug(f"  {get_camera_lens_exif(self)}")
-            logging.debug(f"  {get_camera_lens_exif(anotherImage)}")
             return result
 
         # feature matching
         if self.args.feature_matching:
+            from image_ranking.image_similarity import image_similarity
             score = image_similarity(self.processed_image, anotherImage.processed_image)
             result = score >= self.args.diff
 
         # cv2 hash compare
         else:
+            from image_ranking.cv2_image_hash import cv2_compare_image
             score, res_cnts, thresh = cv2_compare_image(
                 self.processed_image,
                 anotherImage.processed_image,
                 self.args)
             #delta is rougly number of total pixels
-            result = score < self.shape[0] * self.shape[1] * self.args.diff
+            result = score < self.metric
 
         # save similarity data
         self.similar.append((anotherImage.filename, score, result))
@@ -117,41 +124,14 @@ class ImageHash:
     def calculate_blur(self):
         try:
 
-            # read image
-            image = cv2.imread(str(self.path))
-            if image is None:
-                logging.warning(f'warning! failed to read image from {self.path}; skipping!')
-                return
-
-            # resize and crop
-            image = cv2_resize(image, self.args.blur_resize) # resize to speed up processing
-            image = cv2_crop(image, self.args.blur_crop) # crop for central blur detection
-
-            # estimate blur
-            mode = str(self.args.blur_mode).lower()
-            match mode:
-
-                # Laplacian
-                case "laplacian":
-                    blur_map = cv2.Laplacian(image, cv2.CV_64F)
-                    score = numpy.var(blur_map)
-
-                # Tenengrad (Sobel)
-                case "sobel":
-                    sobelx = cv2.Sobel(image, cv2.CV_64F, 1, 0, ksize=3)
-                    sobely = cv2.Sobel(image, cv2.CV_64F, 0, 1, ksize=3)
-                    tenengrad = numpy.sqrt(sobelx**2 + sobely**2)
-                    score = numpy.mean(tenengrad)
-
-                # Sum Modified Laplacian
-                # in my test data so far, SML seems to line up with Sobel results regularly
-                # and is on par with Laplacian performance
-                case _:
-                    M = numpy.array([[0, -1, 0], [-1, 4, -1], [0, -1, 0]])
-                    score = numpy.abs(cv2.filter2D(image, cv2.CV_64F, M)).sum()
-
-            # set attributes
-            self.blur = score
+            # calculate blur
+            from image_ranking.image_blur import calculate_blur
+            self.blur = calculate_blur(
+                self.path,
+                self.args.blur_mode,
+                self.raw_image,
+                self.args.blur_resize,
+                self.args.blur_crop)
 
             return True
 

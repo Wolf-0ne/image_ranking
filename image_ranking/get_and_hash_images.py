@@ -1,5 +1,3 @@
-
-import mimetypes
 import os
 import argparse
 import logging
@@ -7,8 +5,8 @@ from tqdm import tqdm
 
 from concurrent.futures import ThreadPoolExecutor
 
+from image_ranking.content_type import get_mime_type, is_image_file
 from image_ranking.image_hash import ImageHash
-
 
 def get_and_hash_images(args: argparse.Namespace):
     """
@@ -21,9 +19,9 @@ def get_and_hash_images(args: argparse.Namespace):
 
     images = []
     files = os.listdir(args.directory)
-    arguments = [(file, args) for file in files]
 
     # Use ThreadPoolExecutor to process files in parallel
+    arguments = [(file, args) for file in files]
     with ThreadPoolExecutor(max_workers=args.threads) as executor:
         results = list(tqdm(executor.map(process_file, arguments), total=len(files), ascii=' ='))
         #add valid hashed images to list
@@ -42,25 +40,15 @@ def process_file(arguments) -> ImageHash | None:
     if file.lower().endswith('.xmp'):
         return None
 
-    # Get file mime type
-    content_type = mimetypes.guess_type(file)
+    # create image hash object
+    image = ImageHash(file, args)
 
-    # Ignore non-image files
-    if content_type[0] and not content_type[0].startswith('image'):
-        return None
+    # validate and initialize image
+    if image.validate():
+        logging.debug(f"  {image.filename}, type: {image.content_type}")
+        image.initialize()
+        return image
 
-    # Get file path
-    file_path = os.path.join(args.directory, file)
-
-    # If is file
-    if os.path.isfile(file_path):
-        
-        # Ignore already processed file
-        if args.exclude:
-            if os.path.isfile(f"{file_path}.xmp"):
-                return None
-        
-        # hash file result
-        return ImageHash(file, file_path, content_type, args)
-    
+    # invalid image
+    logging.debug(f"Skipping: {image.filename}, type: {image.content_type}")
     return None
