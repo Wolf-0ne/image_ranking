@@ -5,7 +5,6 @@ from tqdm import tqdm
 
 from concurrent.futures import ThreadPoolExecutor
 
-from image_ranking.content_type import get_mime_type, is_image_file
 from image_ranking.image_hash import ImageHash
 
 def get_and_hash_images(args: argparse.Namespace):
