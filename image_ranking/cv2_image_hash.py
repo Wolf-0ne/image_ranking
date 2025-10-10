@@ -37,21 +37,24 @@ def cv2_process_image(path: str, raw: bool, args: argparse.Namespace, debug: boo
     return image
 
 
-def cv2_get_image(path: str, raw: bool = False, grayscale: bool = False):
+def cv2_get_image(path: str, raw_image: bool = False, grayscale: bool = False):
 
-    rgb = None
-    color = cv2.COLOR_RGB2GRAY if grayscale else cv2.COLOR_RGB2BGR
+    image = None
 
     # read image (raw)
-    if raw:
+    if raw_image:
         with rawpy.imread(path) as raw:
-            rgb = raw.postprocess(use_auto_wb=True)
+            color = cv2.COLOR_RGB2GRAY if grayscale else cv2.COLOR_RGB2BGR
+            rgb = raw.postprocess(output_color=rawpy.ColorSpace.sRGB)
+            image = cv2.cvtColor(rgb, color)
 
     # read image (normal)
     else:
-        rgb = cv2.imread(path, cv2.IMREAD_UNCHANGED)
-
-    image = cv2.cvtColor(rgb, color)
+        bgr = cv2.imread(path, cv2.IMREAD_COLOR)
+        if grayscale:
+            image = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+        else:
+            image = bgr
 
     # return image data
     return image
