@@ -79,7 +79,7 @@ class ImageHash:
         if self.processed_image.shape is not None:
             self.shape = self.processed_image.shape
 
-        # hash image content
+        # hash image
         self.hash = hashlib.md5(str(self.processed_image).encode()).hexdigest()
 
         # calculate score threshold
@@ -128,15 +128,15 @@ class ImageHash:
             from image_ranking.image_blur import calculate_blur
             self.blur = calculate_blur(
                 self.path,
+                self.content_type,
                 self.args.blur_mode,
-                self.raw_image,
                 self.args.blur_resize,
                 self.args.blur_crop)
 
             return True
 
         except Exception as e:
-            logging.error(f"error calculating blur for {self.path}: {e}", exec_info=True)
+            logging.error(f"error calculating blur for {self.path}: {e}", exc_info=True)
 
         return False
 

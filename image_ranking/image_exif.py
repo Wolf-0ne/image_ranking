@@ -5,7 +5,7 @@ def get_exif(path: str) -> dict:
     with open(path, 'rb') as f:
         return exifread.process_file(f, debug=True, stop_tag="MakerNote NoteVersion", extract_thumbnail=False)
 
-		#interesting exif tags:
+    #interesting exif tags:
     #BlurWarning - not sure what these values show
     #FocusWarning
     #ExposureWarning

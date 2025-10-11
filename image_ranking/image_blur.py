@@ -10,13 +10,13 @@ from image_ranking.cv2_image_hash import (
 
 def calculate_blur(
         filename: str,
+        content_type: str,
         mode: str = "sml",
-        raw_image: bool = False,
         resize: tuple = None,
         crop: float = 0.0) -> float:
 
     # read image
-    image = cv2_get_image(filename, raw_image, True)
+    image = cv2_get_image(filename, content_type, True)
     if image is None:
         logging.warning(f'warning! failed to read image from {filename}; skipping!')
         return
