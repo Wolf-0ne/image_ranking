@@ -1,4 +1,5 @@
 import exifread
+import logging
 
 def get_exif(path: str) -> dict:
     # get exif data
@@ -13,7 +14,7 @@ def get_exif(path: str) -> dict:
     #AFPointSet - could use these to target blur detection?
     #FocusPixel
 
-def exif_mismatch(exif_a, exif_b) -> bool:
+def exif_match(exif_a, exif_b) -> bool:
     def get_camera_lens_exif(exif) -> tuple:
         return (
             str(exif.get('Image Make', None)),
@@ -24,6 +25,8 @@ def exif_mismatch(exif_a, exif_b) -> bool:
 
     a = get_camera_lens_exif(exif_a)
     b = get_camera_lens_exif(exif_b)
+
     invalid = all(element == 'None' for element in a)
     invalid = invalid and all(element == 'None' for element in b)
+
     return (a == b) or invalid

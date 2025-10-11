@@ -91,9 +91,9 @@ def get_filtered_list(array: list) -> list:
                 else:
                     delta = get_created_delta(image, array[i - 1][0])
 
-                # if created time delta is within 2 seconds, remove raw file
+                # if created time delta is within 3 seconds, remove raw file
                 # ( to avoid removing unrelated files with same name )
-                if delta <= 2:
+                if delta <= 3:
 
                     # remove current raw file
                     if image.raw_image:

@@ -73,8 +73,8 @@ python image-ranking.py <directory> [options]
 - `-t, --threads <int>`
   Number of threads to use (default: number of CPU cores).
 
-- `-l, --limit <int>`  
-  Max number of images to process (default: number of CPU cores).
+- `-l, --limit <int>`
+  Max number of images to process (default: 250).
 
 - `--similarity_resize <(width, height)>`
   Similarity detection image size. Supports keywords `"half"`, `"third"`, `"quarter"` (default: (144, 196) or ('quarter', 'quarter') for feature matching).

@@ -100,8 +100,8 @@ class ImageHash:
         result = False
 
         # return if exif data mismatch
-        from image_ranking.image_exif import exif_mismatch
-        if exif_mismatch(self.exif, anotherImage.exif):
+        from image_ranking.image_exif import exif_match
+        if not exif_match(self.exif, anotherImage.exif):
             logging.debug(f"EXIF mismatch: {self.filename} and {anotherImage.filename}")
             return result
 

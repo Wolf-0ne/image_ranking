@@ -32,7 +32,7 @@ class Core(object):
     def group(self):
 
         # validate images array not empty
-        if len(self.images_list) > 1:
+        if len(self.images_list) < 2:
             return
 
         logging.info("group")
