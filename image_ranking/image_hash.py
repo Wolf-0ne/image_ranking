@@ -41,30 +41,36 @@ class ImageHash:
 
     def validate(self) -> bool:
 
-        # validate image file
-        from image_ranking.content_type import is_image_file
-        if not is_image_file(self.content_type):
-            return False
-
         # Validate file exists
         if os.path.isfile(self.path):
 
             # Ignore already processed file
             if self.args.exclude:
                 if os.path.isfile(f"{self.path}.xmp"):
-                    return None
+                    logging.debug(f"Skipping already processed file: {self.filename}")
+                    return False
+
+            # validate image file
+            from image_ranking.content_type import is_image_file
+            if not is_image_file(self.content_type):
+                logging.debug(f"Skipping non-image file: {self.filename}, type: {self.content_type}")
+                return False
+
+            # raw image flag
+            from image_ranking.content_type import is_raw_image_file
+            self.raw_image = is_raw_image_file(self.content_type)
+
+            # log file timestamp
+            self.created = os.path.getctime(self.path)
 
             # file exists and is valid
             return True
 
         # file does not exist
+        logging.debug(f"File does not exist: {self.filename}")
         return False
 
     def initialize(self):
-
-        # raw image flag
-        from image_ranking.content_type import is_raw_image_file
-        self.raw_image = is_raw_image_file(self.content_type)
 
         # get exif data
         from image_ranking.image_exif import get_exif

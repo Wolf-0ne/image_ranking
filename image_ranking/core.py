@@ -30,6 +30,11 @@ class Core(object):
 
 
     def group(self):
+
+        # validate images array not empty
+        if len(self.images_list) > 1:
+            return
+
         logging.info("group")
         # group all image
         for i in tqdm(range(0, len(self.images_list)), ascii=' ='):
