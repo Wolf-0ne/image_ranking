@@ -95,6 +95,8 @@ if __name__ == '__main__':
                         help='max image rank (1 to 5)')
     parser.add_argument('-t', '--threads', metavar='int', type=int, default=default_threads,
                         help='number of threads')
+    parser.add_argument('-l', '--limit', metavar='int', type=int, default=default_threads,
+                        help='max number of images to process')
 
     parser.add_argument('--similarity_resize', metavar='(width, height)', type=tuple, default=None,
                         help='similarity detection image size, supports keywords "half/third/quarter"')
