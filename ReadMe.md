@@ -11,6 +11,9 @@ My primary goal was to develop a tool to pre-seed ratings to help with culling b
 
 I primarily shoot Fujifilm JPG, but I have added rawpy to hopefully maybe support some Raw formats.
 
+> **Gotchas:** see [`docs/KEY-FACTS.md`](docs/KEY-FACTS.md) — darktable XMP
+> contract, crawler timestamp rules, DB rating flags, bugs already fixed.
+
 ## Features
 
 - Similarity Detection: via feature detection or hashing. Calculated in sequence to avoid hash collision
@@ -24,7 +27,23 @@ I primarily shoot Fujifilm JPG, but I have added rawpy to hopefully maybe suppor
 - Add option for second pass with Feature Detection to focus on images not in groups
 - Add Group Tagging to xmp files
 - Add Object Detection ( dog, person, flower, rock?, landscape, etc ) to improve group tagging
-
+  - pass in classifier xml files
+  - if match a single classifer, apply tag
+  - if match multiple, don't apply tag
+  - method to train classifier?
+  - find an ai model to train an ai model? lol
+- For grouping
+  - on default settings, sub 10k hash matches seem very similar, > 10k is a crap shoot
+  - some > 10k images are the same with different colors/brightness
+  - possible to do multiple passes?
+    - pass a, low color hash
+    - pass b, feature match
+    - grouping by a + b ?
+  - max delta if delta > threshold
+  - look for high delta variance on hash matches, if delta is 1000, then 5000 reject
+- If blur is super close, rank same?
+- Store blur rank?
+- Chart blur delta in group
 
 ## Steps
 
@@ -75,6 +94,8 @@ python image-ranking.py <directory> [options]
 
 - `-l, --limit <int>`
   Max number of images to process (default: 250).
+  **Pass `-l 0` to process every image** — the default silently truncates
+  larger shoots.
 
 - `--similarity_resize <(width, height)>`
   Similarity detection image size. Supports keywords `"half"`, `"third"`, `"quarter"` (default: (144, 196) or ('quarter', 'quarter') for feature matching).
