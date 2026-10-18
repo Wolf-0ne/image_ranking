@@ -1,14 +1,36 @@
-
 import time
 import argparse
+import importlib.util
 import logging
 import os
+import sys
 
 from logging.handlers import MemoryHandler
 
 from pathlib import Path
 
-from image_ranking.core import Core
+# required third-party modules and the package name to install
+REQUIRED_MODULES = {
+    'cv2': 'opencv-python',
+    'rawpy': 'rawpy',
+    'exifread': 'exifread',
+    'imutils': 'imutils',
+    'numpy': 'numpy',
+    'tqdm': 'tqdm',
+}
+
+def check_dependencies() -> None:
+    missing = {
+        module: package
+        for module, package in REQUIRED_MODULES.items()
+        if importlib.util.find_spec(module) is None
+    }
+    if missing:
+        print("Missing required modules:", file=sys.stderr)
+        for module, package in missing.items():
+            print(f"  - {module} (pip install {package})", file=sys.stderr)
+        print(f"Install all at once: pip install {' '.join(missing.values())}", file=sys.stderr)
+        sys.exit(1)
 
 # create formatter
 console_handler = logging.StreamHandler()
@@ -75,8 +97,13 @@ def main(args: argparse.Namespace):
 if __name__ == '__main__':
 
     # init
+    check_dependencies()
+
+    # import after dependency check so missing deps fail with the message above
+    from image_ranking.core import Core
+
     start_time = time.time()
-    default_threads = os.cpu_count() if os.cpu_count() else 4
+    default_threads = os.cpu_count() if os.cpu_count() / 2 else 4
 
     # parse command line arguments
     parser = argparse.ArgumentParser(description='run blur detection on a single image')
@@ -101,7 +128,7 @@ if __name__ == '__main__':
     parser.add_argument('--similarity_resize', metavar='(width, height)', type=tuple, default=None,
                         help='similarity detection image size, supports keywords "half/third/quarter"')
     parser.add_argument('--similarity_crop', metavar='int', default=15,
-                        help='similarity detection crop mask (in %)')
+                        help='similarity detection crop mask (in %%)')
     parser.add_argument('--similarity_blur', metavar='[5]', type=str, nargs='+', default=[5],
                         help='List of radii for Gaussian blur applied before similarity detection')
     parser.add_argument('--similarity_min_contour', metavar='int', type=int, default=500,
@@ -112,14 +139,13 @@ if __name__ == '__main__':
     parser.add_argument('--blur_mode', metavar='str', default='sum_modified_laplacian',
                         help='blur detection algorithm (sum_modified_laplacian, sobel, laplacian)')
     parser.add_argument('--blur_crop', metavar='int', default=30,
-                        help='blur detection crop mask (in %)')
+                        help='blur detection crop mask (in %%)')
     parser.add_argument('--blur_resize', metavar='(width, height)', type=tuple, default=None,
                         help='blur detection image size, supports keywords "half/third/quarter"')
 
     parser.add_argument('-v', '--verbose', action='store_true', help='set logging level to debug')
 
     # show help if no args
-    import sys
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
         exit(1)

@@ -56,8 +56,8 @@ def cv2_get_image(path: str, content_type: str, grayscale: bool = False):
     if is_raw_image_file(content_type):
         import rawpy
         with rawpy.imread(path) as raw:
-            image = raw.postprocess(output_color=rawpy.ColorSpace.sRGB)
-            image = cv2.cvtColor(image, cv2_get_rgb_color_map(grayscale))
+            image = raw.postprocess()
+        image = cv2.cvtColor(image, cv2_get_rgb_color_map(grayscale))
 
     # read image (heic)
     elif content_type == 'image/heic':

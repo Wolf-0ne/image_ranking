@@ -46,13 +46,18 @@ class Core(object):
                 # if i2 already has a root, skip
                 if i2.root: break
 
-                # if i1 has no root and is same group, set i1 as i2's root
+                # if same group, set root
                 if i1.is_same_group(i2):
+                    # if i1 has a root, use it
                     if i1.root:
                         i2.root = i1.root
+                        i2.root_path = i1.root_path
+                    # otherwise i1 is a new group root
                     else:
                         i2.root = i1
+                        i2.root_path = i1.path
 
+                # if no similarity break inner loop
                 else: break
 
 
@@ -143,7 +148,20 @@ class Core(object):
 
         #apply ratings in parallel
         def rate_image(image: ImageHash):
-            darktable_set_rating(f"{image.path}.xmp", image.filename, image.rank, True)
+
+            # get path of root group image
+            root_path = image.root_path
+
+            # if no root path, and image has a raw pair, use image path
+            if not root_path and image.raw_path: root_path = image.path
+
+            # set rating on image and paired raw if exists
+            darktable_set_rating(image.path, image.rank, root_path, True)
+            if image.raw_path:
+                # use the processed image as the EXIF date source; RAW files
+                # are not parseable by exifread
+                darktable_set_rating(image.raw_path, image.rank, root_path, True,
+                                     date_source=image.path)
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.args.threads) as executor:
             executor.map(rate_image, images)

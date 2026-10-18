@@ -18,6 +18,7 @@ def get_and_hash_images(args: argparse.Namespace):
 
     images = []
     files = os.listdir(args.directory)
+    files.sort()
     files = [(file, args) for file in files]
 
     # Iterate results to trim invalid files
@@ -43,6 +44,10 @@ def get_and_hash_images(args: argparse.Namespace):
 
 def limit_list(array: list, limit: int) -> list:
     if limit > 0 and len(array) > limit:
+        logging.warning(
+            f"Image limit reached: processing {limit} of {len(array)} files. "
+            f"Use -l 0 to process all."
+        )
         return array[:limit]
     return array
 
@@ -65,21 +70,21 @@ def get_filtered_list(array: list) -> list:
         if item:
 
             # get current file part
-            current = item[1]
-            image = item[0]
+            current: str = item[1]
+            image: ImageHash = item[0]
 
             # get next and previous file parts
-            next = ""
-            if i < len(array):
+            next: str = ""
+            if i < len(array) - 1:
                 next = array[i + 1]
                 if next: next = next[1]
-            prev = ""
+            prev: str = ""
             if i > 1:
                 prev = array[i - 1]
                 if prev: prev = prev[1]
 
             # check if next or previous file is same name ( different extension )
-            next = next == current
+            next = next == current and next is not None
             prev = prev == current
 
             # if next or previous file is same name
@@ -98,16 +103,23 @@ def get_filtered_list(array: list) -> list:
                     # remove current raw file
                     if image.raw_image:
                         logging.debug(f"Removing raw file due to existing jpeg: {image.path}")
+                        # link raw to jpeg
+                        if next:
+                            array[i + 1][0].raw_path = image.path
+                        else:
+                            array[i - 1][0].raw_path = image.path
                         array[i] = None
 
                     # remove next raw file
                     elif next:
                         logging.debug(f"Removing raw file due to existing jpeg: {array[i + 1][0].path}")
+                        image.raw_path = array[i + 1][0].path  # link raw to jpeg
                         array[i + 1] = None
 
                     # remove previous raw file
                     else:
                         logging.debug(f"Removing raw file due to existing jpeg: {array[i - 1][0].path}")
+                        image.raw_path = array[i - 1][0].path  # link raw to jpeg
                         array[i - 1] = None
 
         # invalid image
@@ -116,6 +128,8 @@ def get_filtered_list(array: list) -> list:
 
         # increment index
         i += 1
+
+    logging.info("filtered raw/jpg pairs")
 
     # return filtered list
     return list(filter(None, array))
@@ -127,6 +141,10 @@ def get_created_delta(image_a: ImageHash, image_b: ImageHash) -> float:
 
 def verify_file(arguments) -> bool:
     file, args = arguments
+
+    # Ignore directories / non-file entries (e.g. subfolders)
+    if not os.path.isfile(os.path.join(args.directory, file)):
+        return None
 
     # Ignore xmp files
     if file.lower().endswith('.xmp'):

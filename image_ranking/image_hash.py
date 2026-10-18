@@ -35,8 +35,14 @@ class ImageHash:
         # similarity data
         self.similar = []
 
-        # parent image ref
+        # paired raw image
+        self.raw_path = ""
+
+        # parent image group ref
         self.root = None
+
+        # parent image path
+        self.root_path = None
 
 
     def validate(self) -> bool:
