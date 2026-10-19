@@ -3,3 +3,6 @@ __pycache__/
 Test/
 Ignore/
 *.py2
+autorun.ps1
+.pi/
+.github/
