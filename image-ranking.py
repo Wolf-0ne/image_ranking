@@ -106,7 +106,7 @@ if __name__ == '__main__':
     default_threads = os.cpu_count() if os.cpu_count() / 2 else 4
 
     # parse command line arguments
-    parser = argparse.ArgumentParser(description='run blur detection on a single image')
+    parser = argparse.ArgumentParser(description='group similar images, rank by sharpness, and seed darktable xmp ratings')
 
     parser.add_argument('directory', type=str, help='directory of images')
 

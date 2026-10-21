@@ -5,4 +5,5 @@ Ignore/
 *.py2
 autorun.ps1
 .pi/
-.github/
+.github/*
+!.github/FUNDING.yml
